@@ -12,6 +12,13 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.firebase.auth.UserInfo;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.softwareapp.group9.doctorpatientapp.LoginActivity;
 import com.softwareapp.group9.doctorpatientapp.R;
 import com.softwareapp.group9.doctorpatientapp.consultdoctor.ConsultDoctorActivity;
@@ -51,8 +58,8 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class FacilitiesNearMeActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback,
-        GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener,  com.google.android.gms.location.LocationListener{
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
+        com.google.android.gms.location.LocationListener, GoogleMap.OnMarkerClickListener{
 
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mToggle;
@@ -64,6 +71,11 @@ public class FacilitiesNearMeActivity extends AppCompatActivity implements Navig
 
     double latitude, longitude;
     private int PROXIMITY_RADIUS = 10000;
+
+    private ChildEventListener mChildEventListener;
+    private DatabaseReference mUsers;
+    Marker marker;
+
     GoogleApiClient mGoogleApiClient;
     Location mLastLocation;
     Marker mCurrLocationMarker;
@@ -111,7 +123,10 @@ public class FacilitiesNearMeActivity extends AppCompatActivity implements Navig
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-
+       /* ChildEventListener mChildEventListner;
+        mUsers = FirebaseDatabase.getInstance().getReference("Users");
+        mUsers.push().setValue(marker);
+    */
     }
     private boolean CheckGooglePlayServices() {
         GoogleApiAvailability googleAPI = GoogleApiAvailability.getInstance();
@@ -126,9 +141,6 @@ public class FacilitiesNearMeActivity extends AppCompatActivity implements Navig
         return true;
     }
 
-    //public void setPadding(View view){
-       // mMap.setPadding(0,300,0,0);
-    //}
 
     @Override
     public boolean onOptionsItemSelected(MenuItem menuItem){
@@ -159,10 +171,25 @@ public class FacilitiesNearMeActivity extends AppCompatActivity implements Navig
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
-        //LatLng sydney = new LatLng(latitude, longitude);
-
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+
+       /* mMap.setOnMarkerClickListener(this);
+        mUsers.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot s: dataSnapshot.getChildren()){
+                    UserInfo user = s.getValue(UserInfo.class);
+                    LatLng location = new LatLng(user.latitude, user.longitude);
+                    mMap.addMarker(new MarkerOptions().position(location).title(user.getDisplayName()).setlcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+        */
 
         //Initialize Google Play Services
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -360,6 +387,11 @@ public class FacilitiesNearMeActivity extends AppCompatActivity implements Navig
 
            
         }
+    }
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        return false;
     }
 }
 
