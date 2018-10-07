@@ -9,6 +9,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.softwareapp.group9.doctorpatientapp.R;
 
 public class Doctor_MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 

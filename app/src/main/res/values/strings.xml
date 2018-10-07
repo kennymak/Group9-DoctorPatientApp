@@ -18,4 +18,5 @@
     <string name="open">Open</string>
     <string name="close">Close</string>
     <string name="change_photo_dialog">ChangePhotoDialog</string>
+    <string name="title_activity_doctor__maps">Map</string>
 </resources>

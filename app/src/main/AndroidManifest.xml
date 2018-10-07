@@ -2,14 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.softwareapp.group9.doctorpatientapp">
 
-    <uses-permission android:name="android.permission.INTERNET"></uses-permission>
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="com.androidtutorialpoint.mymapsappsdirection.permission.MAPS_RECEIVE" />
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES"/>
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -19,25 +18,28 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyCBjgGHRHdPwt6l4gitxn9bIFhuzUUQJQk" />
 
         <activity
             android:name=".LoginActivity"
-            android:theme="@style/StandardTheme">
+            android:theme="@style/StandardTheme" />
         android:theme="@style/AppTheme"
         android:screenOrientation="portrait">
-        <activity android:name=".userprofile.LaunchScreen" android:theme="@style/StandardTheme">
+        <activity
+            android:name=".userprofile.LaunchScreen"
+            android:theme="@style/StandardTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-       <!--  <activity android:name=".registration.RegistrationActivity" android:theme="@style/StandardTheme" />
-        <activity android:name=".userprofile.PatientProfileActivity"/> -->
+        <!--
+        <activity android:name=".registration.RegistrationActivity" android:theme="@style/StandardTheme" />
+        <activity android:name=".userprofile.PatientProfileActivity"/>
+        -->
         <activity
             android:name=".userprofile.ChoiceRegister"
             android:parentActivityName=".userprofile.LaunchScreen" />
@@ -47,13 +49,19 @@
         <activity
             android:name=".userprofile.PatientLogin"
             android:parentActivityName=".userprofile.ChoiceRegister" />
-        <activity android:name=".userprofile.PatientDetails"/>
-        <activity android:name=".userprofile.DoctorProfileActivity" android:theme="@style/StandardTheme" android:label="Map"/>
+        <activity android:name=".userprofile.PatientDetails" />
+        <activity
+            android:name=".userprofile.DoctorProfileActivity"
+            android:label="Map"
+            android:theme="@style/StandardTheme" />
         <activity android:name=".medicalcondition.ViewMedicalConditionActivity" />
         <activity android:name=".consultdoctor.ConsultDoctorActivity" />
         <activity android:name=".facilitiesnearme.FacilitiesNearMeActivity" />
-        <activity android:name=".doctorfeedback.DoctorFeedbackActivity"/>
+        <activity android:name=".doctorfeedback.DoctorFeedbackActivity" />
         <activity android:name=".userprofile.PatientProfileActivity" />
+        <activity
+            android:name=".facilitiesnearme.Doctor_MapsActivity"
+            android:label="@string/title_activity_doctor__maps"></activity>
     </application>
 
 </manifest>

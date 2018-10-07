@@ -1,19 +1,36 @@
 package com.softwareapp.group9.doctorpatientapp.consultdoctor;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.location.Location;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.softwareapp.group9.doctorpatientapp.R;
 import com.softwareapp.group9.doctorpatientapp.doctorfeedback.DoctorFeedbackActivity;
 import com.softwareapp.group9.doctorpatientapp.facilitiesnearme.FacilitiesNearMeActivity;
@@ -22,12 +39,25 @@ import com.softwareapp.group9.doctorpatientapp.userprofile.PatientProfileActivit
 
 import java.io.ByteArrayOutputStream;
 
-public class ConsultDoctorActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class ConsultDoctorActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mToggle;
     private Toolbar mToolbar;
     private NavigationView navigationView;
+
+    private static final String TAG = "CurrentLocationApp";
+    private GoogleApiClient mGoogleApiClient;
+    private Location mLastLocation;
+    private TextView mLatitudeText;
+    private TextView mLongitudeText;
+    private FirebaseDatabase mFirebaseDatabase;
+    private DatabaseReference mLocationDatabaseReference;
+    Button saveLocationToFirebase;
+    String value_lat = null;
+    String value_lng=null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +75,15 @@ public class ConsultDoctorActivity extends AppCompatActivity implements Navigati
         setTitle("Consult Doctor");
 
 
+        FirebaseApp.initializeApp(this);
+        mFirebaseDatabase = FirebaseDatabase.getInstance();
+        mLocationDatabaseReference= mFirebaseDatabase.getReference().child("location");
+        mLatitudeText = (TextView) findViewById((R.id.latitude_text));
+        mLongitudeText = (TextView) findViewById((R.id.longitude_text));
+        saveLocationToFirebase=(Button)findViewById(R.id.getLocation);
+        buildGoogleApiClient();
+
+
         final Button uploadImage = (Button) findViewById(R.id.button4);
         uploadImage.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -55,7 +94,31 @@ public class ConsultDoctorActivity extends AppCompatActivity implements Navigati
 //                startActivity(intent);
             }
         });
+
     }
+
+    protected synchronized void buildGoogleApiClient() {
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+    }
+
+    @Override
+    protected void onStart(){
+        super.onStart();
+        mGoogleApiClient.connect();
+    }
+
+    @Override
+    protected void onStop(){
+        super.onStop();
+        if(mGoogleApiClient.isConnected()){
+            mGoogleApiClient.disconnect();
+        }
+    }
+
 
     /**
      * Compress a bitmap by the @param "quality"
@@ -69,7 +132,7 @@ public class ConsultDoctorActivity extends AppCompatActivity implements Navigati
         bitmap.compress(Bitmap.CompressFormat.JPEG, quality, stream);
         return bitmap;
     }
-
+/*
     @Override
     public boolean onOptionsItemSelected(MenuItem menuItem){
 
@@ -79,7 +142,7 @@ public class ConsultDoctorActivity extends AppCompatActivity implements Navigati
 
         return super.onOptionsItemSelected(menuItem);
     }
-
+*/
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id  = item.getItemId();
@@ -94,5 +157,40 @@ public class ConsultDoctorActivity extends AppCompatActivity implements Navigati
         DrawerLayout layout = (DrawerLayout) findViewById(R.id.drawer_layout_patient);
         layout.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+
+        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+
+        if (mLastLocation != null) {
+
+            value_lat= String.valueOf(mLastLocation.getLatitude());
+            value_lng =String.valueOf(mLastLocation.getLongitude());
+            mLatitudeText.setText(value_lat);
+            mLongitudeText.setText(value_lng);
+
+            saveLocationToFirebase.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    mLocationDatabaseReference.push().setValue("Latitude : "+value_lat +"  & Longitude : "+value_lng);
+                    Toast.makeText(ConsultDoctorActivity.this ,"Location saved to the Firebasedatabase",Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+        Log.i(TAG, "Connection suspended");
+        mGoogleApiClient.connect();
+    }
+
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Log.i(TAG, "Connection failed: ConnectionResult.getErrorCode() = " + connectionResult.getErrorCode());
     }
 }
