@@ -10,6 +10,8 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -25,19 +27,33 @@
         <activity
             android:name=".LoginActivity"
             android:theme="@style/StandardTheme">
+        android:theme="@style/AppTheme"
+        android:screenOrientation="portrait">
+        <activity android:name=".userprofile.LaunchScreen" android:theme="@style/StandardTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".registration.RegistrationActivity" android:theme="@style/StandardTheme" />
-        <activity android:name=".userprofile.PatientProfileActivity"/>
+       <!--  <activity android:name=".registration.RegistrationActivity" android:theme="@style/StandardTheme" />
+        <activity android:name=".userprofile.PatientProfileActivity"/> -->
+        <activity
+            android:name=".userprofile.ChoiceRegister"
+            android:parentActivityName=".userprofile.LaunchScreen" />
+        <activity
+            android:name=".userprofile.PatientRegister"
+            android:parentActivityName=".userprofile.ChoiceRegister" />
+        <activity
+            android:name=".userprofile.PatientLogin"
+            android:parentActivityName=".userprofile.ChoiceRegister" />
+        <activity android:name=".userprofile.PatientDetails"/>
         <activity android:name=".userprofile.DoctorProfileActivity" android:theme="@style/StandardTheme" android:label="Map"/>
         <activity android:name=".medicalcondition.ViewMedicalConditionActivity" />
         <activity android:name=".consultdoctor.ConsultDoctorActivity" />
         <activity android:name=".facilitiesnearme.FacilitiesNearMeActivity" />
-        <activity android:name=".doctorfeedback.DoctorFeedbackActivity"></activity>
+        <activity android:name=".doctorfeedback.DoctorFeedbackActivity"/>
+        <activity android:name=".userprofile.PatientProfileActivity" />
     </application>
 
 </manifest>
