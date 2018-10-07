@@ -41,7 +41,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <!--
         <activity android:name=".registration.RegistrationActivity" android:theme="@style/StandardTheme" />
         <activity android:name=".userprofile.PatientProfileActivity"/>
         -->
@@ -63,11 +62,14 @@
         <activity android:name=".consultdoctor.ConsultDoctorActivity" />
         <activity android:name=".facilitiesnearme.FacilitiesNearMeActivity" />
         <activity android:name=".doctorfeedback.DoctorFeedbackActivity" />
-        <activity android:name=".userprofile.PatientProfileActivity" />
         <activity
             android:name=".facilitiesnearme.Doctor_MapsActivity"
             android:label="@string/title_activity_doctor__maps"></activity>
         <activity android:name=".consultdoctor.UploadActivity"></activity>
+
+        <activity android:name=".medicalcondition.AddMedicalConditionActivity" android:theme="@style/StandardTheme" android:screenOrientation="portrait">
+
+        </activity>
     </application>
 
 </manifest>
