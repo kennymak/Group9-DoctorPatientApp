@@ -2,7 +2,9 @@ package com.softwareapp.group9.doctorpatientapp.consultdoctor;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.location.Location;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -11,7 +13,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -20,10 +21,10 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.softwareapp.group9.doctorpatientapp.R;
@@ -49,6 +50,10 @@ public class ConsultDoctorActivity extends AppCompatActivity implements Navigati
     private TextView mLongitudeText;
     private FirebaseDatabase mFirebaseDatabase;
     private DatabaseReference mLocationDatabaseReference;
+    private FirebaseAuth auth;
+    private FirebaseUser user;
+    private String userId;
+    private String reference;
     Button saveLocationToFirebase;
     String value_lat = null;
     String value_lng=null;
@@ -68,11 +73,13 @@ public class ConsultDoctorActivity extends AppCompatActivity implements Navigati
         navigationView = (NavigationView) findViewById(R.id.patientNv);
         navigationView.setNavigationItemSelectedListener(this);
         setTitle("Consult Doctor");
-
-
+        auth = FirebaseAuth.getInstance();
+        user = auth.getCurrentUser();
+        userId = user.getUid();
+        reference = "Users/Patients/" + userId + "/location";
         FirebaseApp.initializeApp(this);
         mFirebaseDatabase = FirebaseDatabase.getInstance();
-        mLocationDatabaseReference= mFirebaseDatabase.getReference().child("location");
+        mLocationDatabaseReference= mFirebaseDatabase.getReference(reference);
         mLatitudeText = (TextView) findViewById((R.id.latitude_text));
         mLongitudeText = (TextView) findViewById((R.id.longitude_text));
         saveLocationToFirebase=(Button)findViewById(R.id.getLocation);
@@ -127,7 +134,7 @@ public class ConsultDoctorActivity extends AppCompatActivity implements Navigati
         bitmap.compress(Bitmap.CompressFormat.JPEG, quality, stream);
         return bitmap;
     }
-/*
+
     @Override
     public boolean onOptionsItemSelected(MenuItem menuItem){
 
@@ -166,7 +173,11 @@ public class ConsultDoctorActivity extends AppCompatActivity implements Navigati
             mLatitudeText.setText(value_lat);
             mLongitudeText.setText(value_lng);
 
+
+
             saveLocationToFirebase.setOnClickListener(new View.OnClickListener() {
+
+
                 @Override
                 public void onClick(View view) {
                     mLocationDatabaseReference.push().setValue("Latitude : "+value_lat +"  & Longitude : "+value_lng);
@@ -174,6 +185,7 @@ public class ConsultDoctorActivity extends AppCompatActivity implements Navigati
                 }
             });
         }
+
     }
 
     @Override
