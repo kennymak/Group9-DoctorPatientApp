@@ -27,6 +27,8 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -35,17 +37,16 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.softwareapp.group9.doctorpatientapp.R;
 
-public class Doctor_MapsActivity extends FragmentActivity implements OnMapReadyCallback
-, LocationListener/*
-    GoogleApiClient.ConnectionCallbacks,
-    GoogleApiClient.OnConnectionFailedListener,
-    GoogleMap.OnMarkerClickListener */{
+public class Doctor_MapsActivity extends FragmentActivity implements OnMapReadyCallback,
+        LocationListener, GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener, GoogleMap.OnMarkerClickListener {
 
     private GoogleMap mMap;
     private ChildEventListener mChildEventListener;
     private DatabaseReference mUsers;
     Marker marker;
 
+    //private UserInformation user;
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
     double latitude;
     double longitude;
@@ -56,18 +57,32 @@ public class Doctor_MapsActivity extends FragmentActivity implements OnMapReadyC
     private int PROXIMITY_RADIUS = 10000;
     Button btnhospital;
 
+    private FirebaseAuth auth;
+    private UserInformation user;
+    private String userId;
+    private String reference;
+
     @Override
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_doctor__maps);
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
-        mUsers = FirebaseDatabase.getInstance().getReference("Users");
+
+        //setContentView(R.layout.activity_main); //<--where i can open this page
+
+        mUsers = FirebaseDatabase.getInstance().getReference("Users/Patients/" + userId + "/location");
+        /*
+        auth = FirebaseAuth.getInstance();
+        user = auth.getCurrentUser();
+        userId = user.getUid();
+        reference = "Users/Patients/" + userId + "/recomment_location";
+       */
         mUsers.push().setValue(marker);
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         ChildEventListener mChildEventListner;
+
+
 
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 
@@ -78,6 +93,7 @@ public class Doctor_MapsActivity extends FragmentActivity implements OnMapReadyC
         } else {
 
         }
+
     }
 
     private boolean CheckGooglePlayServices() {
@@ -93,31 +109,8 @@ public class Doctor_MapsActivity extends FragmentActivity implements OnMapReadyC
         return true;
     }
 
-    @Override
-    public void onLocationChanged(Location location) {
 
-    }
 
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-
-    }
-
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-
-    }
-/*
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -131,17 +124,14 @@ public class Doctor_MapsActivity extends FragmentActivity implements OnMapReadyC
             public void onDataChange(DataSnapshot dataSnapshot) {
                 float zoomLevel = 13.0f;
                 for (DataSnapshot s : dataSnapshot.getChildren()) {
-                    LocationToFirebase user = s.getValue(LocationToFirebase.class);
+                    user = s.getValue(UserInformation.class);
                     LatLng location = new LatLng(user.latitude, user.longitude); //<--- get users location from database
-                   // mMap.addMarker(new MarkerOptions().position(location).title(user.name)).setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
-                    mMap.addMarker(new MarkerOptions().position(location)).setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+                    mMap.addMarker(new MarkerOptions().position(location).title(user.surname)).setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
                     mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, zoomLevel));
-
                 }
             }
-
             @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+            public void onCancelled(DatabaseError databaseError) {
 
             }
         });
@@ -162,21 +152,22 @@ public class Doctor_MapsActivity extends FragmentActivity implements OnMapReadyC
 
         btnhospital = (Button) findViewById(R.id.btnhospital);
         btnhospital.setOnClickListener(new View.OnClickListener() {
-            String hospital = "Hospital";
+            String hospital = "hospital";
             @Override
             public void onClick(View v) {
                 //mMap.clear();
-                String url = getUrl(latitude, longitude, hospital);
+
+                String url = getUrl(user.latitude, user.longitude, hospital);
                 Object[] DataTransfer = new Object[2];
                 DataTransfer[0] = mMap;
                 DataTransfer[1] = url;
                 GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
                 getNearbyPlacesData.execute(DataTransfer);
-                //btnhospital.setText("here");
                 Toast.makeText(Doctor_MapsActivity.this,"Nearby hospitals", Toast.LENGTH_LONG).show();
             }
         });
     }
+
     private synchronized void buildGoogleApiClient() {
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
@@ -189,9 +180,66 @@ public class Doctor_MapsActivity extends FragmentActivity implements OnMapReadyC
 
 
 
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+
+    }
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        LatLng clickLatLng = marker.getPosition();
+        btnhospital.setText(clickLatLng.latitude + ", " + clickLatLng.longitude);
+        return false;
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+
+        mLocationRequest.setInterval(1000);
+        mLocationRequest.setFastestInterval(1000);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+        if (ContextCompat.checkSelfPermission(this,
+                android.Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, (com.google.android.gms.location.LocationListener) this);
+        }
+
+
+    }
+    private String getUrl(double latitude, double longitude, String nearbyPlace) {
+        StringBuilder googlePlacesUrl = new StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json?");
+        googlePlacesUrl.append("location=" + latitude + "," + longitude); //<---- user location NO
+        googlePlacesUrl.append("&radius=" + PROXIMITY_RADIUS);
+        googlePlacesUrl.append("&type=" + nearbyPlace);
+        googlePlacesUrl.append("&sensor=true");
+        googlePlacesUrl.append("&key=" + "AIzaSyATuUiZUkEc_UgHuqsBJa1oqaODI-3mLs0");
+        return (googlePlacesUrl.toString());
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
+
     @Override
     public void onLocationChanged(Location location) {
-
         // mLastLocation = location;
         mUsers.addListenerForSingleValueEvent(new ValueEventListener() {
             //get latitude and longitude from database
@@ -199,17 +247,20 @@ public class Doctor_MapsActivity extends FragmentActivity implements OnMapReadyC
             public void onDataChange(DataSnapshot dataSnapshot) {
 
                 for (DataSnapshot s : dataSnapshot.getChildren()) {
-                    LocationToFirebase user = s.getValue(LocationToFirebase.class);
+                    UserInformation user = s.getValue(UserInformation.class);
                     LatLng location = new LatLng(user.latitude, user.longitude); //<--- get users location from database
-                    // mMap.addMarker(new MarkerOptions().position(location).title(user.name)).setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+                    mMap.addMarker(new MarkerOptions().position(location).title(user.surname)).setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
 
 
 //Place current location marker
-
+                    latitude = location.latitude;
+                    longitude = location.longitude;
+                    //LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+                    btnhospital.setText(latitude + "; " + longitude);
                     MarkerOptions markerOptions = new MarkerOptions();
                     markerOptions.position(location);
                     markerOptions.title("Patient Position");
-                    markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
+                    markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
                     mCurrLocationMarker = mMap.addMarker(markerOptions);
 
                     mMap.moveCamera(CameraUpdateFactory.newLatLng(location));
@@ -228,61 +279,6 @@ public class Doctor_MapsActivity extends FragmentActivity implements OnMapReadyC
             }
         });
 
-    }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-
-    }
-
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-
-        mLocationRequest.setInterval(1000);
-        mLocationRequest.setFastestInterval(1000);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-        if (ContextCompat.checkSelfPermission(this,
-                android.Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, (com.google.android.gms.location.LocationListener) this);
-        }
-    }
-    private String getUrl(double latitude, double longitude, String nearbyPlace) {
-        StringBuilder googlePlacesUrl = new StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json?");
-        googlePlacesUrl.append("location=" + latitude + "," + longitude); //<---- user location NO
-        googlePlacesUrl.append("&radius=" + PROXIMITY_RADIUS);
-        googlePlacesUrl.append("&type=" + nearbyPlace);
-        googlePlacesUrl.append("&sensor=true");
-        googlePlacesUrl.append("&key=" + "AIzaSyATuUiZUkEc_UgHuqsBJa1oqaODI-3mLs0");
-        return (googlePlacesUrl.toString());
-
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
-    }
-
-    @Override
-    public boolean onMarkerClick(Marker marker) {
-        LatLng clickLatLng = marker.getPosition();
-        btnhospital.setText(clickLatLng.latitude + ", " + clickLatLng.longitude);
-        return false;
     }
 
     @Override
@@ -314,6 +310,7 @@ public class Doctor_MapsActivity extends FragmentActivity implements OnMapReadyC
             }
         }
     }
-    */
+
 
 }
+

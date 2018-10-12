@@ -12,6 +12,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.UserInfo;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -76,6 +77,11 @@ public class FacilitiesNearMeActivity extends AppCompatActivity implements Navig
     private DatabaseReference mUsers;
     Marker marker;
 
+    private FirebaseAuth auth;
+    private UserInformation user;
+    private String userId;
+    private String reference;
+
     GoogleApiClient mGoogleApiClient;
     Location mLastLocation;
     Marker mCurrLocationMarker;
@@ -101,8 +107,7 @@ public class FacilitiesNearMeActivity extends AppCompatActivity implements Navig
 
         gpsTraker = new GPSTraker(getApplicationContext());
         mLocation = gpsTraker.getLocation();
-        //latitude = mLocation.getLatitude();
-        //longitude = mLocation.getLongitude();
+
 
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             checkLocationPermission();
@@ -122,6 +127,9 @@ public class FacilitiesNearMeActivity extends AppCompatActivity implements Navig
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        mUsers = FirebaseDatabase.getInstance().getReference("Users/Patients/" + userId + "/location");
+        mUsers.push().setValue(marker);
 
        /* ChildEventListener mChildEventListner;
         mUsers = FirebaseDatabase.getInstance().getReference("Users");
@@ -173,14 +181,15 @@ public class FacilitiesNearMeActivity extends AppCompatActivity implements Navig
         mMap = googleMap;
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
 
-       /* mMap.setOnMarkerClickListener(this);
+        mMap.setOnMarkerClickListener(this);
         mUsers.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot s: dataSnapshot.getChildren()){
-                    UserInfo user = s.getValue(UserInfo.class);
+                    Recomment_location user = s.getValue(Recomment_location.class);
                     LatLng location = new LatLng(user.latitude, user.longitude);
-                    mMap.addMarker(new MarkerOptions().position(location).title(user.getDisplayName()).setlcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                    mMap.addMarker(new MarkerOptions().position(location).title("Doctor Recommend").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                    //mMap.addMarker(new MarkerOptions().position(location).title(user.getDisplayName()).setlcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
                 }
             }
 
@@ -189,7 +198,7 @@ public class FacilitiesNearMeActivity extends AppCompatActivity implements Navig
 
             }
         });
-        */
+
 
         //Initialize Google Play Services
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

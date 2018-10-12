@@ -1,11 +1,14 @@
 package com.softwareapp.group9.doctorpatientapp.consultdoctor;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.location.Location;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -50,13 +53,15 @@ public class ConsultDoctorActivity extends AppCompatActivity implements Navigati
     private TextView mLongitudeText;
     private FirebaseDatabase mFirebaseDatabase;
     private DatabaseReference mLocationDatabaseReference;
+
     private FirebaseAuth auth;
     private FirebaseUser user;
     private String userId;
     private String reference;
+
     Button saveLocationToFirebase;
     String value_lat = null;
-    String value_lng=null;
+    String value_lng = null;
 
 
     @Override
@@ -73,16 +78,18 @@ public class ConsultDoctorActivity extends AppCompatActivity implements Navigati
         navigationView = (NavigationView) findViewById(R.id.patientNv);
         navigationView.setNavigationItemSelectedListener(this);
         setTitle("Consult Doctor");
+
         auth = FirebaseAuth.getInstance();
         user = auth.getCurrentUser();
         userId = user.getUid();
         reference = "Users/Patients/" + userId + "/location";
+
         FirebaseApp.initializeApp(this);
         mFirebaseDatabase = FirebaseDatabase.getInstance();
-        mLocationDatabaseReference= mFirebaseDatabase.getReference(reference);
+        mLocationDatabaseReference = mFirebaseDatabase.getReference(reference);
         mLatitudeText = (TextView) findViewById((R.id.latitude_text));
         mLongitudeText = (TextView) findViewById((R.id.longitude_text));
-        saveLocationToFirebase=(Button)findViewById(R.id.getLocation);
+        saveLocationToFirebase = (Button) findViewById(R.id.getLocation);
         buildGoogleApiClient();
 
 
@@ -108,15 +115,15 @@ public class ConsultDoctorActivity extends AppCompatActivity implements Navigati
     }
 
     @Override
-    protected void onStart(){
+    protected void onStart() {
         super.onStart();
         mGoogleApiClient.connect();
     }
 
     @Override
-    protected void onStop(){
+    protected void onStop() {
         super.onStop();
-        if(mGoogleApiClient.isConnected()){
+        if (mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect();
         }
     }
@@ -129,16 +136,16 @@ public class ConsultDoctorActivity extends AppCompatActivity implements Navigati
      * @param quality
      * @return
      */
-    public Bitmap compressBitmap(Bitmap bitmap, int quality){
+    public Bitmap compressBitmap(Bitmap bitmap, int quality) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, quality, stream);
         return bitmap;
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem menuItem){
+    public boolean onOptionsItemSelected(MenuItem menuItem) {
 
-        if(mToggle.onOptionsItemSelected(menuItem)){
+        if (mToggle.onOptionsItemSelected(menuItem)) {
             return true;
         }
 
@@ -147,14 +154,31 @@ public class ConsultDoctorActivity extends AppCompatActivity implements Navigati
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        int id  = item.getItemId();
+        int id = item.getItemId();
         //Plan here is to have all the home screens of all the other features in one project so that our navigation bar can access them
-        switch(id) {
-            case R.id.nav_profile: Intent intent = new Intent(this, PatientProfileActivity.class); startActivity(intent); finish(); break;
-            case R.id.nav_condition: Intent intent2 = new Intent(this, ViewMedicalConditionActivity.class); startActivity(intent2); finish(); break;
-            case R.id.nav_facilities: Intent intent4 = new Intent(this, FacilitiesNearMeActivity.class); startActivity(intent4); finish(); break;
-            case R.id.nav_feedback: Intent intent5 = new Intent(this, DoctorFeedbackActivity.class); startActivity(intent5); finish(); break;
-            case R.id.nav_logout: System.exit(0);
+        switch (id) {
+            case R.id.nav_profile:
+                Intent intent = new Intent(this, PatientProfileActivity.class);
+                startActivity(intent);
+                finish();
+                break;
+            case R.id.nav_condition:
+                Intent intent2 = new Intent(this, ViewMedicalConditionActivity.class);
+                startActivity(intent2);
+                finish();
+                break;
+            case R.id.nav_facilities:
+                Intent intent4 = new Intent(this, FacilitiesNearMeActivity.class);
+                startActivity(intent4);
+                finish();
+                break;
+            case R.id.nav_feedback:
+                Intent intent5 = new Intent(this, DoctorFeedbackActivity.class);
+                startActivity(intent5);
+                finish();
+                break;
+            case R.id.nav_logout:
+                System.exit(0);
         }
         DrawerLayout layout = (DrawerLayout) findViewById(R.id.drawer_layout_patient);
         layout.closeDrawer(GravityCompat.START);
@@ -164,6 +188,16 @@ public class ConsultDoctorActivity extends AppCompatActivity implements Navigati
     @Override
     public void onConnected(@Nullable Bundle bundle) {
 
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
 
         if (mLastLocation != null) {
