@@ -70,13 +70,14 @@ public class Doctor_MapsActivity extends FragmentActivity implements OnMapReadyC
         //setContentView(R.layout.activity_main); //<--where i can open this page
 
         mUsers = FirebaseDatabase.getInstance().getReference("Users/Patients/" + userId + "/location");
+        mUsers.push().setValue(marker);
         /*
         auth = FirebaseAuth.getInstance();
         user = auth.getCurrentUser();
         userId = user.getUid();
         reference = "Users/Patients/" + userId + "/recomment_location";
        */
-        mUsers.push().setValue(marker);
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
